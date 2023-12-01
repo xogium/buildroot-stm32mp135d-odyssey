@@ -1,0 +1,1 @@
+source "$BR2_EXTERNAL_STM32MP135D_ODYSSEY_PATH/packages/Config.in"

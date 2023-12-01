@@ -1,0 +1,7 @@
+menu "Target packages"
+
+source "$BR2_EXTERNAL_STM32MP135D_ODYSSEY_PATH/packages/mraa-grove/Config.in"
+source "$BR2_EXTERNAL_STM32MP135D_ODYSSEY_PATH/packages/python-grovepy/Config.in"
+source "$BR2_EXTERNAL_STM32MP135D_ODYSSEY_PATH/packages/python-smbus2/Config.in"
+
+endmenu
