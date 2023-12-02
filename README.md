@@ -68,7 +68,7 @@ rootfs.ext2
 rootfs.ext4
 rootfs.tar
 sdcard.img
-stm32mp135d-odyssey.dtb
+stm32mp135d-odyssey-grove.dtb
 tee.bin
 tee-header_v2.bin
 tee-pageable_v2.bin
@@ -186,7 +186,7 @@ setenv eth1addr 2c:f7:f1:30:2b:62
 setenv ethaddr 2c:f7:f1:30:2b:62
 dhcp
 nfs ${kernel_addr_r} 192.168.1.92:/srv/nfs/stm32mp135d/boot/zImage
-nfs ${fdt_addr_r} 192.168.1.92:/srv/nfs/stm32mp135d/boot/stm32mp135d-odyssey.dtb
+nfs ${fdt_addr_r} 192.168.1.92:/srv/nfs/stm32mp135d/boot/stm32mp135d-odyssey-grove.dtb
 setenv bootargs root=/dev/nfs rootfstype=nfs ip=dhcp nfsroot=192.168.1.92:/srv/nfs/stm32mp135d,tcp,v3 rw quiet console=ttySTM0,115200n8 earlycon
 bootz ${kernel_addr_r} - ${fdt_addr_r}
 ```
