@@ -1,0 +1,5 @@
+config BR2_PACKAGE_BMI08X_SRC
+	bool
+	help
+	  Bosch's BMI08x Sensor API source code.
+	  Enable this to building bmi088-python.
