@@ -1,0 +1,30 @@
+From 1a5e5463efcbaf744cf3da53408b3237f5a3b483 Mon Sep 17 00:00:00 2001
+From: Jookia <contact@jookia.org>
+Date: Sat, 2 Dec 2023 23:17:22 +1100
+Subject: [PATCH] Makefile: Fix compiling for Buildroot
+
+---
+ Makefile | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 3783f76..7264600 100644
+--- a/Makefile
++++ b/Makefile
+@@ -12,11 +12,10 @@ $(TARGET): $(OBJS) rpi_bma456_m.o
+ $(BMA456_LIB): $(OBJS) rpi_bma456.o
+ 	$(CC) --shared -o $@ $^
+ 
+-rpi_bma456_m.o: CFLAGS=-D_HAS_MAIN=1
+ rpi_bma456_m.o: rpi_bma456.c
+-	$(CC) -c $(CFLAGS) -o $@ $<
++	$(CC) -c $(CFLAGS) -D_HAS_MAIN=1 -o $@ $<
+ 
+ clean:
+ 	rm -f *.o $(TARGET) $(BMA456_LIB)
+ 
+-.PHONY: all clelan
++.PHONY: all clean
+-- 
+2.42.1
+
