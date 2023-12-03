@@ -234,3 +234,21 @@ in it:
 ```printf '\x2c\xf7\xf1\30\x2b\x62'|dd of=/sys/bus/nvmem/devices/0-00501/nvmem bs=1```
 
 To store a second MAC address, do like so: ```printf '\x2c\xf7\xf1\30\x2b\x63'|dd of=/sys/bus/nvmem/devices/0-00501/nvmem bs=1 seek=16```
+
+## Networking and SSH ##
+
+Linux will boot and acquire an IP over Ethernet using DHCP. You can then log in
+to your device using this command:
+
+```
+ssh root@192.168.1.92
+```
+
+Replace 192.168.1.92 with your device's IP. You can usually find this in your
+router control page.
+
+Once logged in you can change the password using the ```passwd``` command.
+
+Alternatively you can disable SSH access by setting
+```BR2_PACKAGE_DROPBEAR=y``` to ```BR2_PACKAGE_DROPBEAR=n``` in your buildroot
+```.config``` file, then rebuilding and re-flashing your board.
