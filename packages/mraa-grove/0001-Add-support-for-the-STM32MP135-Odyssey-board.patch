@@ -1,0 +1,234 @@
+From 7f272f275c5e9025c22e4fb908035be56e5f67b9 Mon Sep 17 00:00:00 2001
+From: Jookia <contact@jookia.org>
+Date: Sun, 3 Dec 2023 17:32:43 +0000
+Subject: [PATCH] Add support for the STM32MP135 Odyssey board
+
+This currently only supports GPIOs available for use without muxing.
+---
+ api/mraa/types.h      |   1 +
+ include/arm/odyssey.h |  20 +++++++
+ src/CMakeLists.txt    |   1 +
+ src/arm/arm.c         |   6 ++
+ src/arm/odyssey.c     | 128 ++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 156 insertions(+)
+ create mode 100644 include/arm/odyssey.h
+ create mode 100644 src/arm/odyssey.c
+
+diff --git a/api/mraa/types.h b/api/mraa/types.h
+index 312ee0e..8552bff 100644
+--- a/api/mraa/types.h
++++ b/api/mraa/types.h
+@@ -77,6 +77,7 @@ typedef enum {
+     MRAA_RADXA_ROCK_3B = 32,        /**< Radxa ROCK 3 Model B */
+     MRAA_RADXA_CM3 = 33,            /**< Radxa CM3 */
+     MRAA_RADXA_CM5_IO = 34,         /**< Radxa CM5 IO */
++    MRAA_ODYSSEY = 35,              /**< Seeed STM32MP135D Odyssey */
+ 
+     // USB platform extenders start at 256
+     MRAA_FTDI_FT4222 = 256,         /**< FTDI FT4222 USB to i2c bridge */
+diff --git a/include/arm/odyssey.h b/include/arm/odyssey.h
+new file mode 100644
+index 0000000..64a6bbc
+--- /dev/null
++++ b/include/arm/odyssey.h
+@@ -0,0 +1,20 @@
++/*
++ * Author: Jookia <contact@jookia.org>
++ *
++ * SPDX-License-Identifier: MIT
++ */
++
++#pragma once
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include "mraa_internal.h"
++
++mraa_board_t *
++        mraa_odyssey();
++
++#ifdef __cplusplus
++}
++#endif
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 273c4be..6598660 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -119,6 +119,7 @@ set (mraa_LIB_ARM_SRCS_NOAUTO
+   ${PROJECT_SOURCE_DIR}/src/arm/siemens/platform.c
+   ${PROJECT_SOURCE_DIR}/src/arm/siemens/platform_iot2050.c
+   ${PROJECT_SOURCE_DIR}/src/arm/orange_pi_prime.c
++  ${PROJECT_SOURCE_DIR}/src/arm/odyssey.c
+ )
+ 
+ set (mraa_LIB_MIPS_SRCS_NOAUTO
+diff --git a/src/arm/arm.c b/src/arm/arm.c
+index ccc5839..ea0bee8 100644
+--- a/src/arm/arm.c
++++ b/src/arm/arm.c
+@@ -25,6 +25,7 @@
+ #include "arm/adlink_ipi.h"
+ #include "arm/siemens/iot2050.h"
+ #include "arm/orange_pi_prime.h"
++#include "arm/odyssey.h"
+ #include "mraa_internal.h"
+ 
+ 
+@@ -125,6 +126,8 @@ mraa_arm_platform()
+             platform_type = MRAA_SIEMENS_IOT2050;
+         else if (mraa_file_contains("/proc/device-tree/model", "Xunlong Orange Pi Prime"))
+             platform_type = MRAA_ORANGE_PI_PRIME;
++        else if (mraa_file_contains("/proc/device-tree/model", "Seeed STM32MP135D Odyssey Board (with Grove)"))
++            platform_type = MRAA_ODYSSEY;
+     }
+ 
+     switch (platform_type) {
+@@ -175,6 +178,9 @@ mraa_arm_platform()
+         case MRAA_ORANGE_PI_PRIME:
+             plat = mraa_orange_pi_prime();
+             break;
++        case MRAA_ODYSSEY:
++            plat = mraa_odyssey();
++            break;
+         default:
+             plat = NULL;
+             syslog(LOG_ERR, "Unknown Platform, currently not supported by MRAA");
+diff --git a/src/arm/odyssey.c b/src/arm/odyssey.c
+new file mode 100644
+index 0000000..ca160bd
+--- /dev/null
++++ b/src/arm/odyssey.c
+@@ -0,0 +1,128 @@
++/*
++ * Author: Jookia <contact@jookia.org>
++ *
++ * SPDX-License-Identifier: MIT
++ */
++
++#include <mraa/common.h>
++#include <stdarg.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/mman.h>
++
++#include "arm/odyssey.h"
++#include "common.h"
++
++#define LINE_A 0
++#define LINE_B 1
++#define LINE_C 2
++#define LINE_D 3
++#define LINE_E 4
++#define LINE_F 5
++#define LINE_G 6
++#define LINE_H 7
++#define LINE_I 8
++
++static void
++add_pin(mraa_board_t* board, int index, int gpio_chip, int gpio_line, mraa_pincapabilities_t pincapabilities_t, char* fmt, ...)
++{
++    va_list arg_ptr;
++    if (index >= board->phy_pin_count)
++        return;
++
++    mraa_pininfo_t* pininfo = &board->pins[index];
++    va_start(arg_ptr, fmt);
++    vsnprintf(pininfo->name, MRAA_PIN_NAME_SIZE, fmt, arg_ptr);
++
++    if( pincapabilities_t.gpio == 1 ) {
++        pininfo->gpio.gpio_chip = gpio_chip;
++        pininfo->gpio.gpio_line = gpio_line;
++    }
++
++    pininfo->capabilities = pincapabilities_t;
++
++    va_end(arg_ptr);
++    pininfo->gpio.pinmap = gpio_line;
++    pininfo->gpio.mux_total = 0;
++}
++
++mraa_board_t*
++mraa_odyssey()
++{
++    mraa_board_t* b = (mraa_board_t*) calloc(1, sizeof(mraa_board_t));
++
++    if (b == NULL) {
++        return NULL;
++    }
++
++    b->phy_pin_count = 22;
++    b->gpio_count = 20;
++    b->i2c_bus_count = 1;
++    b->i2c_bus[0].bus_id = 1;
++    b->uart_dev_count = 1;
++    b->uart_dev[0].device_path = "/dev/serial0";
++    b->no_bus_mux = 1;
++    b->pwm_dev_count = 2;
++    b->pwm_default_period = 500;
++    b->pwm_max_period = 2147483;
++    b->pwm_min_period = 1;
++    b->platform_type = MRAA_ODYSSEY;
++    b->platform_name = "ODYSSEY- STM32MP135D";
++    b->platform_version = "1.0";
++    b->chardev_capable = 1;
++
++    b->pins = (mraa_pininfo_t*) calloc(1, sizeof(mraa_pininfo_t) * b->phy_pin_count);
++    b->adv_func = (mraa_adv_func_t*) calloc(1, sizeof(mraa_adv_func_t));
++
++    if ( b->adv_func == NULL ) {
++        free(b);
++        return NULL;
++    }
++
++    if ( b->pins == NULL ) {
++        free(b->adv_func);
++        free(b);
++        return NULL;
++    }
++
++    mraa_pincapabilities_t gpio_pin = {1,1,0,0,0,0,0,0};
++    mraa_pincapabilities_t pwm_pin = {1,0,1,0,0,0,0,0};
++
++    // Skip I2C1, UART TX/RX, these are in use
++    add_pin(b,  0, LINE_B,  1, gpio_pin, "GPIO04"); // PB1
++    add_pin(b,  1, LINE_D,  4, gpio_pin, "GPIO17"); // PD4
++    add_pin(b,  2, LINE_C,  0, gpio_pin, "GPIO18"); // PC0
++    add_pin(b,  3, LINE_D, 13, gpio_pin, "GPIO27"); // PD13
++    add_pin(b,  4, LINE_F, 10, gpio_pin, "GPIO22"); // PF10
++    add_pin(b,  5, LINE_E, 14, gpio_pin, "GPIO23"); // PE14
++    add_pin(b,  6, LINE_D,  5, gpio_pin, "GPIO24"); // PD5
++    add_pin(b,  7, LINE_H, 12, gpio_pin, "GPIO10"); // PH12
++    add_pin(b,  8, LINE_E,  4, gpio_pin, "GPIO09"); // PE4
++    add_pin(b,  9, LINE_F,  9, gpio_pin, "GPIO25"); // PF9
++    add_pin(b, 10, LINE_G, 10, gpio_pin, "GPIO11"); // PG10
++    add_pin(b, 11, LINE_H, 11, gpio_pin, "GPIO08"); // PH11
++    add_pin(b, 12, LINE_E, 10, gpio_pin, "GPIO07"); // PE10
++    add_pin(b, 13, LINE_B, 10, gpio_pin, "GPIO05"); // PB10
++    add_pin(b, 14, LINE_A,  7, gpio_pin, "GPIO06"); // PA7
++    add_pin(b, 15, LINE_A,  3, pwm_pin,  "GPIO12"); // PA3
++    add_pin(b, 16, LINE_A,  6, pwm_pin,  "GPIO13"); // PA6
++    add_pin(b, 17, LINE_E, 11, gpio_pin, "GPIO19"); // PE11
++    add_pin(b, 18, LINE_D,  3, gpio_pin, "GPIO16"); // PD3
++    add_pin(b, 19, LINE_D, 11, gpio_pin, "GPIO26"); // PD11
++    add_pin(b, 20, LINE_A,  5, gpio_pin, "GPIO20"); // PA5
++    add_pin(b, 21, LINE_A,  0, gpio_pin, "GPIO21"); // PA0
++
++    b->pins[15].pwm.parent_id = 4;
++    b->pins[15].pwm.pinmap = 3;
++    b->pins[15].pwm.mux_total = 0;
++    b->pwm_dev[0].name = "PWM0";
++    b->pwm_dev[0].index = 15;
++
++    b->pins[16].pwm.parent_id = 0;
++    b->pins[16].pwm.pinmap = 0;
++    b->pins[16].pwm.mux_total = 0;
++    b->pwm_dev[1].name = "PWM1";
++    b->pwm_dev[1].index = 16;
++
++    return b;
++}
+-- 
+2.20.1
+
