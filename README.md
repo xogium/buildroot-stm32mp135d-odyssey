@@ -131,7 +131,7 @@ will be wiped entirely!
 When the writing has completed, press ctrl+c at the u-boot prompt to 
 terminate the usb mass storage mode. Then, reset your board again, and 
 confirm that it is now booting linux and that you get a login prompt. 
-Log in with the root user and no password.
+Log in with the root user and the password 'grove'.
 
 #### Micro sd card boot ####
 If you wish to burn the system onto a micro sd card, please proceed as 
@@ -146,7 +146,7 @@ When the micro sd card has been successfully written to, insert it into
 the micro sd socket of the STM32MP135D ODYSSEY board, and apply power 
 via usb-c or PoE. The system will print to the serial console by 
 default, so make sure to connect a usb to serial console cable. Log in 
-with the user root and no password.
+with the user root and the password 'grove'.
 
 #### Nfs boot ####
 To boot the system via NFS, please ensure to set up your /etc/exports as 
