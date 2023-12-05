@@ -25,10 +25,7 @@ stored into the eMMC boot regions via DFU.
 partitions, respectively, along with one single fip partition which contains 
 the FIP image. There is also an u-boot-env partition the same as in emmc.img, 
 along with a single rootfs.
-* The external tree provides an empty external.mk, Config.in and a 
-packages directory to be used, should you wish to add additional options 
-and content. Please refer to the corresponding section in the buildroot 
-manual to learn more.
+* The external tree provides support for [Grove Base Hat for Raspberry Pi](https://wiki.seeedstudio.com/Grove_Base_Hat_for_Raspberry_Pi/) as a start to build your projects.
 
 ## How to build ##
 ### Preparations ###
@@ -252,3 +249,53 @@ Once logged in you can change the password using the ```passwd``` command.
 Alternatively you can disable SSH access by setting
 ```BR2_PACKAGE_DROPBEAR=y``` to ```BR2_PACKAGE_DROPBEAR=n``` in your buildroot
 ```.config``` file, then rebuilding and re-flashing your board.
+
+## Grove support ##
+
+As mentioned earlier this external tree provides support for Seeed Studio's
+Grove Base Hat as well as some helpful utilities and examples applications.
+
+This consists of the following features:
+
+- A device tree enabling PWM and I2C on the Pi header
+- Symbolic links in /dev for Pi compatibility
+- A port of mraa with pin mappings for the Odyssey
+- An install of Python and the grove.py package
+- Packaging and porting examples for some sensors
+- Low level tools for direct GPIO and I2C access
+
+Code written using standard Linux interfaces should require minimal porting
+when moving from other Linux Grove boards to this one.
+
+Here are some commands to get you started:
+
+- i2cdetect, i2cdump, i2cget, i2cset, i2ctransfer
+- gpiodetect, gpiofind, gpioget, gpioinfo, gpiomon, gpioset
+- mraa-gpio, mraa-i2c, mraa-uart
+- bma456_test, test_ak09918, test_bmi088, test_icm20600
+- dht_simpleread, sht4x
+- Typing grove_ then pressing the tab key will give you a full list of grove commands
+
+If you have a buzzer, make sure to attach it to the PWM port and listen for a
+beep on boot!
+
+Remember to power off the board when connecting and disconnecting components to
+your Grove hat!
+
+## Modifying and extending Buildroot ##
+
+Buildroot is a fantastic system for creating embedded Linux systems. If you
+plan to use this system I highly recommend reading [the Buildroot user
+manual](https://buildroot.org/downloads/manual/manual.html).
+
+That said, here are some helpful tips to get you started:
+
+- 'make menuconfig' will let you add or remove packages
+- 'make savedefconfig' updates the configs/ file in this repository
+- strace and kernel tracing are enabled by default for this tree
+- Put files in rootfs_overlay/etc/init.d/ and mark them as executable to run them on boot
+- Put files in rootfs_overlay/usr/bin and mark them as executable to run them from a shell
+- Look in the packages directory for examples of packaging C and python packages
+
+If you have questions about this tree or find bugs, please open an issue in the
+GitHub repository.
