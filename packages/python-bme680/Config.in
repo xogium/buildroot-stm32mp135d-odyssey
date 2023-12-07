@@ -1,0 +1,6 @@
+config BR2_PACKAGE_PYTHON_BME680
+	bool "python-bme680"
+	help
+	  Python library for the BME680 temperature, humidity and gas sensor
+
+	  https://github.com/pimoroni/bme680-python

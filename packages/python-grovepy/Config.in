@@ -1,0 +1,7 @@
+config BR2_PACKAGE_PYTHON_GROVEPY
+	bool "python-grovepy"
+	select BR2_PACKAGE_PYTHON_SMBUS2 # runtime
+	help
+	  Python library for Seeedstudio Grove devices.
+
+	  https://github.com/seeed-studio/grove.py

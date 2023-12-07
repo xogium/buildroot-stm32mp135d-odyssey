@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /usr/lib/seeed_dht
+exec python3 dht_simpleread.py

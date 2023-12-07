@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Enable PWM support
+modprobe pwm_stm32
+
+# Link some devices for Pi compatibility
+ln -s /dev/i2c-0 /dev/i2c-1
+ln -s /dev/ttySTM1 /dev/serial0

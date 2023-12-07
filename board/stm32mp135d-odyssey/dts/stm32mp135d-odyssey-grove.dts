@@ -1,0 +1,114 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) STMicroelectronics 2021 - All Rights Reserved
+ * Author: Alexandre Torgue <alexandre.torgue@foss.st.com> for STMicroelectronics.
+ * Copyright (C) 2023 Casey Reeves <casey@xogium.me>
+ */
+
+/dts-v1/;
+
+#include "stm32mp135d-odyssey.dts"
+
+/ {
+	model = "Seeed STM32MP135D Odyssey Board (with Grove)";
+	compatible = "st,stm32mp135d-odyssey-grove", "st,stm32mp135d-odyssey", "st,stm32mp135f-dk", "st,stm32mp135";
+};
+
+&usart2 {
+	pinctrl-names = "default", "sleep", "idle";
+	pinctrl-0 = <&usart2_pins_b>;
+	pinctrl-1 = <&usart2_sleep_pins_b>;
+	pinctrl-2 = <&usart2_idle_pins_b>;
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "okay";
+};
+
+&timers3 {
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "okay";
+	pwm {
+		pinctrl-0 = <&pwm3_pins_b>;
+		pinctrl-1 = <&pwm3_sleep_pins_b>;
+		pinctrl-names = "default", "sleep";
+		status = "okay";
+	};
+};
+
+&timers5 {
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "okay";
+	pwm {
+		pinctrl-0 = <&pwm5_pins_a>;
+		pinctrl-1 = <&pwm5_sleep_pins_a>;
+		pinctrl-names = "default", "sleep";
+		status = "okay";
+	};
+};
+
+&pinctrl {
+	/* usart2 */
+	usart2_pins_b: usart2-1 {
+		pins1 {
+			pinmux = <STM32_PINMUX('F', 13, AF7)>; /* USART2_TX */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+		pins2 {
+			pinmux = <STM32_PINMUX('D', 15, AF1)>; /* USART2_RX */
+			bias-disable;
+		};
+	};
+
+	usart2_idle_pins_b: usart2-idle-1 {
+		pins1 {
+			pinmux = <STM32_PINMUX('F', 13, ANALOG)>; /* USART2_TX */
+		};
+		pins2 {
+			pinmux = <STM32_PINMUX('D', 15, AF1)>; /* USART2_RX */
+			bias-disable;
+		};
+	};
+
+	usart2_sleep_pins_b: usart2-sleep-1 {
+		pins {
+			pinmux = <STM32_PINMUX('F', 13, ANALOG)>, /* USART2_TX */
+				 <STM32_PINMUX('D', 15, ANALOG)>; /* USART2_RX */
+		};
+	};
+
+	/* pwm3 */
+	pwm3_pins_b: pwm3-1 {
+		pins {
+			pinmux = <STM32_PINMUX('A', 6, AF2)>; /* TIM3_CH1 */
+			bias-pull-down;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+	};
+
+	pwm3_sleep_pins_b: pwm3-sleep-1 {
+		pins {
+			pinmux = <STM32_PINMUX('A', 6, ANALOG)>; /* TIM3_CH1 */
+		};
+	};
+
+	/* pwm5 */
+	pwm5_pins_a: pwm5-0 {
+		pins {
+			pinmux = <STM32_PINMUX('A', 3, AF2)>; /* TIM5_CH4 */
+			bias-pull-down;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+	};
+
+	pwm5_sleep_pins_a: pwm5-sleep-0 {
+		pins {
+			pinmux = <STM32_PINMUX('A', 3, ANALOG)>; /* TIM5_CH4 */
+		};
+	};
+};

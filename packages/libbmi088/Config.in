@@ -1,0 +1,5 @@
+config BR2_PACKAGE_LIBBMI088
+	select BR2_PACKAGE_BMI08X_SRC
+	bool "libbmi088"
+	help
+	  bmi088-python, for use with grove.py.

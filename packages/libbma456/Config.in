@@ -1,0 +1,4 @@
+config BR2_PACKAGE_LIBBMA456
+	bool "libbma456"
+	help
+	  Seeed's BMA456 library, for use with grove.py.
