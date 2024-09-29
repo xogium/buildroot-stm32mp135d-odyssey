@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-BMI08X_SRC_VERSION = bmi08x_v1.4.4
+BMI08X_SRC_VERSION = c9695c809accedc177fd23a911bb8bb0960106a7
 BMI08X_SRC_SITE = $(call github,boschsensortec,BMI08x-Sensor-API,$(BMI08X_SRC_VERSION))
 BMI08X_SRC_LICENSE = BSD-3-Clause
 BMI08X_SRC_INSTALL_STAGING = YES
